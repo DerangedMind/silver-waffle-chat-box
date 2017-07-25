@@ -23,6 +23,21 @@ class App extends Component {
     }
   }
 
+  _handleKeyPress (e) {
+    if (e.key === 'Enter') {
+
+      const newMessage = {
+        id: this.state.messages.length + 1,
+        username: this.state.currentUser.name,
+        content: e.target.value
+      }
+      e.target.value = ""
+
+      const messages = this.state.messages.concat(newMessage)
+      this.setState({ messages: messages })
+    }
+  }
+
   componentDidMount() {
     console.log("componentDidMount <App />")
     setTimeout(() => {
@@ -47,7 +62,7 @@ class App extends Component {
           <a href="/" className="navbar-brand">Chatty</a>
         </nav>
         <MessageList messages={this.state.messages} />
-        <ChatBar currentUser={this.state.currentUser} />
+        <ChatBar keyPress={this._handleKeyPress.bind(this)} currentUser={this.state.currentUser} />
       </div>
     );
   }
