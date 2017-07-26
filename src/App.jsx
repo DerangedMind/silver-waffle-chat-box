@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import ChatBar from './ChatBar.jsx'
-import Message from './Message.jsx'
 import MessageList from './MessageList.jsx'
 import uuidv1 from 'uuid/v1'
 
@@ -10,7 +9,7 @@ class App extends Component {
     super(props)
     this.state = {
       currentUser: { 
-        name: "Anonymous",
+        name: 'Anonymous',
         color: 'ffaa00'
       }, 
       messages: [],
@@ -28,7 +27,7 @@ class App extends Component {
   addMessage (e) {
     if (e.keyCode === 13) {
       const newMessage = this.makeMessageObject(e.target.value)
-      e.target.value = ""
+      e.target.value = ''
 
       this.updateMessages(this.handleClientPost(newMessage))
       this.socket.send(JSON.stringify(newMessage))
@@ -96,11 +95,9 @@ class App extends Component {
     this.setState ({messages: messages })
   }
   componentDidMount() {
-    console.log("componentDidMount <App />")
-
     this.socket = new WebSocket('ws://localhost:3001')
 
-    this.socket.onopen = (e) => {
+    this.socket.onopen = () => {
       console.log('Connection established')
       this.initialize()
     }
@@ -122,15 +119,15 @@ class App extends Component {
         this.updateCurrentUser(newMessage)        
       }
       else {
-        throw new Error("Unknown data type " + newMessage.type)
+        throw new Error('Unknown data type ' + newMessage.type)
       }
     }
 
-    this.socket.onerror = (e) => {
-      console.log('errorrrrr')
+    this.socket.onerror = () => {
+      console.log('error')
     }
 
-    this.socket.onclose = (e) => {
+    this.socket.onclose = () => {
       console.log('closing')
     }
   }
