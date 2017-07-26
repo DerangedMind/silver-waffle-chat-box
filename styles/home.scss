@@ -9,6 +9,10 @@
       margin: 70px 0;
     }
 
+    img {
+      max-width: 60%;
+    }
+
     .chatbar {
       background: tomato;
       border-top: 1px solid black;
@@ -73,6 +77,12 @@
       position: fixed;
       right: 0;
       top: 0;
+
+      .connections {
+        float: right;
+        font-size: 1em;
+        line-height: 60px
+      }
     }
 
     .navbar-brand {

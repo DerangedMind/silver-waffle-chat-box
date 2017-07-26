@@ -2,57 +2,134 @@ import React, {Component} from 'react';
 import ChatBar from './ChatBar.jsx'
 import Message from './Message.jsx'
 import MessageList from './MessageList.jsx'
+import uuidv1 from 'uuid/v1'
+
+
 
 class App extends Component {
   
   constructor(props) {
     super(props)
     this.state = {
-      currentUser: { name: "Bob" }, // optional. if currentUser is not defined, it means the user is Anonymous
-      messages: [
-        {
-          id: 1,
-          username: "Bob",
-          content: "Has anyone seen my marbles?",
-        },
-        { id: 2,
-          username: "Anonymous",
-          content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
-        }
-      ]
+      currentUser: { 
+        name: "Bob",
+        color: 'ffaa00'
+      }, 
+      messages: [],
+      connectedUsers: null,
     }
   }
 
-  _handleKeyPress (e) {
-    if (e.key === 'Enter') {
-
-      const newMessage = {
-        id: this.state.messages.length + 1,
-        username: this.state.currentUser.name,
-        content: e.target.value
-      }
+  addMessage (e) {
+    if (e.keyCode === 13) {
+      const newMessage = this.makeMessageObject(e.target.value)
       e.target.value = ""
 
-      const messages = this.state.messages.concat(newMessage)
-      this.setState({ messages: messages })
+      this.updateMessages(this.handleClientPost(newMessage))
+      this.socket.send(JSON.stringify(newMessage))
     }
+  }
+
+  changeUsername (e) {
+    if (e.keyCode === 13) {
+      const currentName = this.state.currentUser.name
+      const updateUser = this.makeUserObject(e.target.value, this.state.currentUser.color)
+      
+      const notification = {
+        type: 'postNotification',
+        id: uuidv1(),
+        user: updateUser,
+        content: `${currentName} has changed their name to ${updateUser.name}`
+      }
+
+      this.updateCurrentUser(updateUser)
+      this.updateMessages(this.handleClientPost(notification))
+      this.socket.send(JSON.stringify(notification))
+    }
+  }
+
+  handleClientPost(post) {
+    post.type = post.type === 'postMessage' ? 'incomingMessage' : post.type
+    post.type = post.type === 'postNotification' ? 'incomingNotification' : post.type
+
+    return post
+  }
+
+  makeMessageObject (content) {
+    return {
+      type: 'postMessage',
+      id: uuidv1(),
+      username: {
+        name: this.state.currentUser.name,
+        color: this.state.currentUser.color
+      },
+      content: content
+    }
+  }
+
+  makeUserObject (name, color) {
+    return { 
+        name: name,
+        color: color
+      }
+  }
+
+  updateCurrentUser(data) {
+    let currentUser = {
+      name: data.name,
+      color: data.color
+    }
+    this.setState({currentUser: currentUser})
+  }
+
+  updateConnectionCount(data) {
+    this.setState({connectedUsers: data.count})
+  }
+
+  updateMessages(data) {
+    const messages = this.state.messages.concat(data)
+    this.setState ({messages: messages })
   }
 
   componentDidMount() {
     console.log("componentDidMount <App />")
-    setTimeout(() => {
-      console.log("Simulating incoming message")
-      // Add a new message to the list of messages in the data store
-      const newMessage = {
-          id: 3, 
-          username: "Michelle", 
-          content: "Hello there!"
+
+    this.socket = new WebSocket('ws://localhost:3001')
+
+    this.socket.onopen = (e) => {
+      console.log('Connection established')
+    }
+
+    this.socket.onmessage = (e) => {
+      // a message was received
+      if (typeof e.data !== 'string') {
+        return
       }
-      const messages = this.state.messages.concat(newMessage)
-      // Update the state of the app component.
-      // Calling setState will trigger a call to render() in App and all child components.
-      this.setState({messages: messages})
-    }, 3000);
+
+      const newMessage = JSON.parse(e.data)
+      if (newMessage.type === 'incomingMessage' || newMessage.type === 'incomingNotification') {
+        this.updateMessages(newMessage)
+      }
+      else if (newMessage.type === 'incomingConnections') {
+        this.updateConnectionCount(newMessage)
+      }
+      else if (newMessage.type === 'userColor') {
+        this.updateCurrentUser(newMessage)        
+      }
+      else {
+        throw new Error("Unknown data type " + newMessage.type)
+      }
+    }
+
+    this.socket.onerror = (e) => {
+      console.log('errorrrrr')
+    }
+
+    this.socket.onclose = (e) => {
+      console.log('closing')
+    }
+
+
   }
 
   render() {
@@ -60,9 +137,10 @@ class App extends Component {
       <div>
         <nav className="navbar">
           <a href="/" className="navbar-brand">Chatty</a>
+          <div className="connections">({this.state.connectedUsers}) users online</div>
         </nav>
         <MessageList messages={this.state.messages} />
-        <ChatBar keyPress={this._handleKeyPress.bind(this)} currentUser={this.state.currentUser} />
+        <ChatBar addMessage={this.addMessage.bind(this)} changeUsername={this.changeUsername.bind(this)} currentUser={this.state.currentUser} />
       </div>
     );
   }
