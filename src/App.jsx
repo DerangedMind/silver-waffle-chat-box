@@ -91,6 +91,13 @@ class App extends Component {
     this.setState ({messages: messages })
   }
 
+  initialize() {
+    this.socket.send(JSON.stringify({
+      type: 'initialize',
+      name: this.state.currentUser.name
+    }))
+  }
+
   componentDidMount() {
     console.log("componentDidMount <App />")
 
@@ -98,6 +105,7 @@ class App extends Component {
 
     this.socket.onopen = (e) => {
       console.log('Connection established')
+      this.initialize()
     }
 
     this.socket.onmessage = (e) => {

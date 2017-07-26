@@ -54,9 +54,18 @@ wss.clients.forEach(function each(client) {
 
   // send message to each connected client
   ws.on('message', function incoming(data) {
+    data = JSON.parse(data)
+    
+    if (data.type === 'initialize') {
+      data.type = 'userColor'
+      data.color = colorPicker()
+      ws.send(JSON.stringify(data))
+      return
+    }
+
     wss.clients.forEach(function (client) {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
-        data = JSON.parse(data)
+        
         
         if (data.type === 'postMessage') {
           data.type = 'incomingMessage'
