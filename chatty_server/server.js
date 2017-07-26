@@ -14,12 +14,7 @@ const server = express()
 // Create the WebSockets server
 const wss = new SocketServer({ server, clientTracking: true });
 
-// wss.broadcast = function(data) {
-//   wss.clients.forEach(function(client) {
-//     client.send(data);
-//   });
-// };
-
+// array of possible username colors
 const usernameColors = ['ff0000','00ff00', '0000ff', '00ffff']
 
 function colorPicker() {
@@ -42,7 +37,6 @@ wss.broadcast = function(data) {
 // the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
-
   
   // broadcast when user connects
   wss.broadcast(JSON.stringify({
@@ -60,7 +54,6 @@ wss.on('connection', (ws) => {
       ws.send(JSON.stringify(data))
       return
     }
-
 
     wss.clients.forEach(function (client) {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
