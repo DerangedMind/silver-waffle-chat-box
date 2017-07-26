@@ -4,8 +4,6 @@ import Message from './Message.jsx'
 import MessageList from './MessageList.jsx'
 import uuidv1 from 'uuid/v1'
 
-
-
 class App extends Component {
   
   constructor(props) {
@@ -131,7 +129,7 @@ class App extends Component {
     this.socket.onerror = (e) => {
       console.log('errorrrrr')
     }
-    
+
     this.socket.onclose = (e) => {
       console.log('closing')
     }
