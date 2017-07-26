@@ -29,6 +29,10 @@ You can store static files like images, fonts, etc in the `build` folder.
 
 For example, if you copy a file called my_image.png into the build folder you can access it using `http://localhost:3000/build/my_image.png`.
 
+### Screenshots
+
+![burrito_cat](https://github.com/DerangedMind/silver-waffle-chat-box/blob/master/docs/burrito_cat.png?raw=true "Burrito Cat on Chatter Box")
+
 ### Linting
 
 This boilerplate project includes React ESLint configuration.
