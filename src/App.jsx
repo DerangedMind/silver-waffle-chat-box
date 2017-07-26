@@ -12,12 +12,19 @@ class App extends Component {
     super(props)
     this.state = {
       currentUser: { 
-        name: "Bob",
+        name: "Anonymous",
         color: 'ffaa00'
       }, 
       messages: [],
       connectedUsers: null,
     }
+  }
+
+ initialize() {
+    this.socket.send(JSON.stringify({
+      type: 'initialize',
+      name: this.state.currentUser.name
+    }))
   }
 
   addMessage (e) {
@@ -90,14 +97,6 @@ class App extends Component {
     const messages = this.state.messages.concat(data)
     this.setState ({messages: messages })
   }
-
-  initialize() {
-    this.socket.send(JSON.stringify({
-      type: 'initialize',
-      name: this.state.currentUser.name
-    }))
-  }
-
   componentDidMount() {
     console.log("componentDidMount <App />")
 
@@ -132,12 +131,10 @@ class App extends Component {
     this.socket.onerror = (e) => {
       console.log('errorrrrr')
     }
-
+    
     this.socket.onclose = (e) => {
       console.log('closing')
     }
-
-
   }
 
   render() {

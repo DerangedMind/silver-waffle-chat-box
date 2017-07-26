@@ -43,21 +43,17 @@ wss.broadcast = function(data) {
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
-  ws.send(JSON.stringify({
-    type: 'userColor',
-    name: 'Bob',
-    color: colorPicker()
-  }))
-
+  
+  // broadcast when user connects
   wss.broadcast(JSON.stringify({
     type: 'incomingConnections',
     count: wss.clients.size
   }))
 
-  // send message to each connected client
   ws.on('message', function incoming(data) {
     data = JSON.parse(data)
     
+    // on first connection, assign name and colour 
     if (data.type === 'initialize') {
       data.type = 'userColor'
       data.color = colorPicker()
@@ -65,19 +61,16 @@ wss.on('connection', (ws) => {
       return
     }
 
+
     wss.clients.forEach(function (client) {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
+        
         if (data.type === 'postMessage') {
           data.type = 'incomingMessage'
         } 
         else if (data.type === 'postNotification') {
           data.type = 'incomingNotification'
         }
-        else if (data.type === 'getConnections') {
-          data.type = 'incomingConnections'
-          data.count = wss.clients.size
-        }
-        
         client.send(JSON.stringify(data))
       }
     })
