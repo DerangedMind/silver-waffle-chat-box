@@ -29,6 +29,14 @@ function colorPicker() {
   return color
 }
 
+wss.broadcast = function(data) {
+  wss.clients.forEach(function(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
+
 // Set up a callback that will run when a client connects to the server
 // When a client connects they are assigned a socket, represented by
 // the ws parameter in the callback.
@@ -41,16 +49,10 @@ wss.on('connection', (ws) => {
     color: colorPicker()
   }))
 
-wss.clients.forEach(function each(client) {
-  client.send(  wss.clients.forEach(function each(client) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({
-        type: 'incomingConnections',
-        count: wss.clients.size
-      }))
-    }
-  })) 
-})
+  wss.broadcast(JSON.stringify({
+    type: 'incomingConnections',
+    count: wss.clients.size
+  }))
 
   // send message to each connected client
   ws.on('message', function incoming(data) {
@@ -65,8 +67,6 @@ wss.clients.forEach(function each(client) {
 
     wss.clients.forEach(function (client) {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
-        
-        
         if (data.type === 'postMessage') {
           data.type = 'incomingMessage'
         } 
@@ -84,14 +84,10 @@ wss.clients.forEach(function each(client) {
   })
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
   ws.on('close', () => {
-    wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({
-          type: 'incomingConnections',
-          count: wss.clients.size
-        }))
-      }
-    })
     console.log('Client disconnected')
+    wss.broadcast(JSON.stringify({
+      type: 'incomingConnections',
+      count: wss.clients.size
+    }))
   })
 })
